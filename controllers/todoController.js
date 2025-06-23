@@ -13,8 +13,18 @@ const newTodo = async (req, res) => {
 
 const getTodo = async (req, res) => {
   try {
-    const todos = await Todo.find();
-    res.status(200).json(todos);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit
+    const todos = await Todo.find().skip(skip).limit(limit);
+    const total = await Todo.countDocuments();
+    res.status(200).json({
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+      data: todos
+    });
   } catch (e) {
     res.status(500).json({ message: 'Error Fetching Todos', error: e.message });
   }
